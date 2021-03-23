@@ -1,11 +1,13 @@
 package com.zpavel.kraken.client.service;
 
-import com.zpavel.kraken.client.domain.AddOrderRequest;
-import com.zpavel.kraken.client.domain.AddOrderResponse;
-import com.zpavel.kraken.client.domain.BalanceRequest;
-import com.zpavel.kraken.client.domain.BalanceResponse;
+import com.zpavel.kraken.client.domain.*;
+
+import java.util.List;
 
 public interface KrakenService {
+    KrakenTicker getTicker(List<String> pairs);
+
     BalanceResponse getBalance(BalanceRequest request);
+
     AddOrderResponse addOrder(AddOrderRequest request);
 }

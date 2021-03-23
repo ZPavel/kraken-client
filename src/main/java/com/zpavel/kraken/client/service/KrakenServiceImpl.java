@@ -2,19 +2,14 @@ package com.zpavel.kraken.client.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zpavel.kraken.client.domain.AddOrderRequest;
-import com.zpavel.kraken.client.domain.AddOrderResponse;
-import com.zpavel.kraken.client.domain.BalanceRequest;
-import com.zpavel.kraken.client.domain.BalanceResponse;
+import com.zpavel.kraken.client.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
@@ -26,23 +21,39 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class KrakenServiceImpl implements KrakenService {
     private static int nonce = 0;
     private Logger logger = LoggerFactory.getLogger(KrakenServiceImpl.class);
-    @Value("${kraken.api.api-key}")
+    @Value("${kraken.api-key}")
     private String apiKey;
-    @Value("${kraken.api.api-secret}")
+    @Value("${kraken.api-secret}")
     private String apiSecret;
-    @Value("${kraken.api.url}")
-    private String apiUrl;
-    @Value("${kraken.api.path.balance}")
-    private String balancePath;
+    @Value("${kraken.api.public}")
+    private String apiPublic;
+    @Value("${kraken.api.private}")
+    private String apiPrivate;
+    @Value("${kraken.path.balance}")
+    private String pathBalance;
+    @Value("${kraken.path.ticker}")
+    private String pathTicker;
     @Autowired
     private RestTemplate restTemplate;
 
-    private BalanceResponse postToApi(String path, BalanceRequest req) {
+    private <S> S sendGet(String url) {
+        ResponseEntity<S> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                HttpEntity.EMPTY,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+        return response.getBody();
+    }
+
+    private <S, T extends ApiRequest> S sendPost(String url, String path, T req) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -62,15 +73,14 @@ public class KrakenServiceImpl implements KrakenService {
             e.printStackTrace();
         }
 
-        HttpEntity<BalanceRequest> entity = new HttpEntity<>(req, headers);
-        BalanceResponse apiResponse = null;
-        try {
-            apiResponse = restTemplate.postForObject(apiUrl + path, entity, BalanceResponse.class);
-        } catch (RestClientException e) {
-            e.printStackTrace();
-        }
-
-        return apiResponse;
+        ResponseEntity<S> response = restTemplate.exchange(
+                url + path,
+                HttpMethod.POST,
+                new HttpEntity<>(req, headers),
+                new ParameterizedTypeReference<>() {
+                }
+        );
+        return response.getBody();
     }
 
     private String signMessage(String endpoint, String nonce, String jsonReq)
@@ -92,9 +102,14 @@ public class KrakenServiceImpl implements KrakenService {
     }
 
     @Override
+    public KrakenTicker getTicker(List<String> pairs) {
+        return sendGet(apiPublic + pathTicker + String.join(",", pairs));
+    }
+
+    @Override
     public BalanceResponse getBalance(BalanceRequest request) {
         request.setNonce(getNonce());
-        return postToApi(balancePath, request);
+        return sendPost(apiPrivate, pathBalance, request);
     }
 
     @Override
