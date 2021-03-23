@@ -1,7 +1,6 @@
 package com.zpavel.kraken.client.domain;
 
 import lombok.Data;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,7 +8,6 @@ import java.util.Map;
 
 @Data
 public class KrakenTicker {
-    @CreatedDate
     private LocalDateTime created;
     private Map<String, PairData> result;
 
