@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.zpavel</groupId>
     <artifactId>kraken-client</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>kraken-client</name>
     <description>kraken-client</description>
 
@@ -21,7 +21,7 @@
         <connection>scm:git:git@bitbucket.org:ZPavel/kraken-client.git</connection>
         <url>scm:git:git@bitbucket.org:ZPavel/kraken-client.git</url>
         <developerConnection>scm:git:git@bitbucket.org:ZPavel/kraken-client.git</developerConnection>
-      <tag>kraken-client-0.0.1</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <dependencies>
