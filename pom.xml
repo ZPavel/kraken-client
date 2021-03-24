@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.zpavel</groupId>
-    <artifactId>kraken-api</artifactId>
+    <artifactId>kraken-client</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>kraken-client</name>
     <description>kraken-client</description>
