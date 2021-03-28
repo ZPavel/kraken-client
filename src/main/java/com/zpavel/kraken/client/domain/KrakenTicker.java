@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
-public class KrakenTicker {
+public class KrakenTicker extends ApiResponse {
     private LocalDateTime created;
     private Map<String, PairData> result;
 

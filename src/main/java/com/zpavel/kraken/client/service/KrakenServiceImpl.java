@@ -1,93 +1,113 @@
 package com.zpavel.kraken.client.service;
 
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zpavel.kraken.client.ApiException;
+import com.zpavel.kraken.client.config.PropertyLoader;
 import com.zpavel.kraken.client.domain.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
-@Service
 public class KrakenServiceImpl implements KrakenService {
-    private static int nonce = 0;
-    private Logger logger = LoggerFactory.getLogger(KrakenServiceImpl.class);
-    @Value("${kraken.api-key}")
-    private String apiKey;
-    @Value("${kraken.api-secret}")
-    private String apiSecret;
-    @Value("${kraken.api.public}")
-    private String apiPublic;
-    @Value("${kraken.api.private}")
-    private String apiPrivate;
-    @Value("${kraken.path.balance}")
-    private String pathBalance;
-    @Value("${kraken.path.ticker}")
-    private String pathTicker;
-    @Autowired
-    private RestTemplate restTemplate;
+    private static final Logger LOGGER = Logger.getLogger(KrakenServiceImpl.class.getName());
 
-    private <S> S sendGet(String url) {
-        ResponseEntity<S> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                HttpEntity.EMPTY,
-                new ParameterizedTypeReference<>() {
-                }
-        );
-        return response.getBody();
+    public static final String KRAKEN_KEY = "kraken.key";
+    public static final String KRAKEN_SECRET = "kraken.secret";
+    public static final String KRAKEN_BALANCE = "kraken.balance";
+    public static final String KRAKEN_TICKER = "kraken.ticker";
+    private static int nonce = 0;
+    private HttpClient httpClient = HttpClient.newHttpClient();
+    private ObjectMapper mapper = new ObjectMapper();
+
+    private ApiResponse sendGet(String url) throws ApiException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
+        HttpResponse<String> httpResponse;
+        try {
+            httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            LOGGER.info("Status  : " + httpResponse.statusCode());
+            LOGGER.info("Headers : " + httpResponse.headers());
+            LOGGER.info("Body    : " + httpResponse.body());
+        } catch (IOException | InterruptedException e) {
+            throw new ApiException("GET failed");
+        }
+
+        ApiResponse response;
+        try {
+            response = mapper.readValue(httpResponse.body(), ApiResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Unable to parse response");
+        }
+        return response;
     }
 
-    private <S, T extends ApiRequest> S sendPost(String url, String path, T req) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.add("API-Key", apiKey);
-        ObjectMapper objectMapper = new ObjectMapper();
+    private ApiResponse sendPost(String url, ApiRequest req) throws ApiException {
         String reqString = null;
         try {
-            reqString = objectMapper.writeValueAsString(req);
+            reqString = mapper.writeValueAsString(req);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            LOGGER.severe(e.getMessage());
         }
+        HttpRequest request;
         try {
-            headers.add("API-Sign", signMessage(path, req.getNonce(), reqString));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
+            URI uri = new URI(url);
+            request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .headers(
+                            "Content-Type", "application/json",
+                            "Accept", "application/json",
+                            "API-Key", PropertyLoader.getInstance().getProperty(KRAKEN_KEY),
+                            "API-Sign", signMessage(uri.getPath(), req.getNonce(), reqString)
+                    )
+                    .POST(HttpRequest.BodyPublishers.ofString(reqString))
+                    .build();
+        } catch (NoSuchAlgorithmException | InvalidKeyException | URISyntaxException e) {
+            throw new ApiException("Build request failed");
         }
 
-        ResponseEntity<S> response = restTemplate.exchange(
-                url + path,
-                HttpMethod.POST,
-                new HttpEntity<>(req, headers),
-                new ParameterizedTypeReference<>() {
-                }
-        );
-        return response.getBody();
+        HttpResponse<String> httpResponse;
+        try {
+            httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            throw new ApiException("POST failed");
+        }
+
+        LOGGER.info("Status : " + httpResponse.statusCode());
+        LOGGER.info("Body : " + httpResponse.body());
+
+        ApiResponse response;
+        try {
+            response = mapper.readValue(httpResponse.body(), ApiResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Unable to parse response");
+        }
+        return response;
     }
 
     private String signMessage(String endpoint, String nonce, String jsonReq)
             throws NoSuchAlgorithmException, InvalidKeyException {
         String message = nonce + jsonReq;
         byte[] hash256 = MessageDigest.getInstance("SHA-256").digest(message.getBytes(StandardCharsets.UTF_8));
-        byte[] secretDecoded = Base64.getDecoder().decode(apiSecret);
+        byte[] secretDecoded = Base64.getDecoder().decode(PropertyLoader.getInstance().getProperty(
+                KRAKEN_SECRET));
         Mac hmacsha512 = Mac.getInstance("HmacSHA512");
         hmacsha512.init(new SecretKeySpec(secretDecoded, "HmacSHA512"));
         hmacsha512.update(endpoint.getBytes(StandardCharsets.UTF_8));
@@ -102,14 +122,14 @@ public class KrakenServiceImpl implements KrakenService {
     }
 
     @Override
-    public KrakenTicker getTicker(List<String> pairs) {
-        return sendGet(apiPublic + pathTicker + String.join(",", pairs));
+    public KrakenTicker getTicker(List<String> pairs) throws ApiException {
+        return (KrakenTicker) sendGet(PropertyLoader.getInstance().getProperty(KRAKEN_TICKER) + String.join(",", pairs));
     }
 
     @Override
-    public BalanceResponse getBalance(BalanceRequest request) {
+    public BalanceResponse getBalance(BalanceRequest request) throws ApiException {
         request.setNonce(getNonce());
-        return sendPost(apiPrivate, pathBalance, request);
+        return (BalanceResponse) sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_BALANCE), request);
     }
 
     @Override

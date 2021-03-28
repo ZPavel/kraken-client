@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class BalanceResponse {
+public class BalanceResponse extends ApiResponse {
     private List<String> error;
     private Map<String, BigDecimal> result;
 }

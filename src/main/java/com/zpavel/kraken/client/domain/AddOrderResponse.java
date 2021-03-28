@@ -1,4 +1,4 @@
 package com.zpavel.kraken.client.domain;
 
-public class AddOrderResponse {
+public class AddOrderResponse extends ApiResponse {
 }
