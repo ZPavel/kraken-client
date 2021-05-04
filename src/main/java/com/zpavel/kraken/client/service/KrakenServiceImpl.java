@@ -1,8 +1,6 @@
 package com.zpavel.kraken.client.service;
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.zpavel.kraken.client.ApiException;
 import com.zpavel.kraken.client.config.PropertyLoader;
 import com.zpavel.kraken.client.domain.*;
@@ -25,7 +23,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class KrakenServiceImpl implements KrakenService {
-    private static final Logger LOGGER = Logger.getLogger(KrakenServiceImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(KrakenServiceImpl.class.getName());
 
     public static final String KRAKEN_KEY = "kraken.key";
     public static final String KRAKEN_SECRET = "kraken.secret";
@@ -33,9 +31,9 @@ public class KrakenServiceImpl implements KrakenService {
     public static final String KRAKEN_TICKER = "kraken.ticker";
     private static int nonce = 0;
     private HttpClient httpClient = HttpClient.newHttpClient();
-    private ObjectMapper mapper = new ObjectMapper();
+    private Gson gson = new Gson();
 
-    private ApiResponse sendGet(String url) throws ApiException {
+    private HttpResponse sendGet(String url) throws ApiException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .GET()
@@ -43,29 +41,18 @@ public class KrakenServiceImpl implements KrakenService {
         HttpResponse<String> httpResponse;
         try {
             httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            LOGGER.info("Status  : " + httpResponse.statusCode());
-            LOGGER.info("Headers : " + httpResponse.headers());
-            LOGGER.info("Body    : " + httpResponse.body());
+            LOG.info("Request status  : " + httpResponse.statusCode());
+            LOG.info("Request headers : " + httpResponse.headers());
+            LOG.info("Request body    : " + httpResponse.body());
         } catch (IOException | InterruptedException e) {
-            throw new ApiException("GET failed");
+            throw new ApiException("GET failed", e);
         }
 
-        ApiResponse response;
-        try {
-            response = mapper.readValue(httpResponse.body(), ApiResponse.class);
-        } catch (JsonProcessingException e) {
-            throw new ApiException("Unable to parse response");
-        }
-        return response;
+        return httpResponse;
     }
 
-    private ApiResponse sendPost(String url, ApiRequest req) throws ApiException {
-        String reqString = null;
-        try {
-            reqString = mapper.writeValueAsString(req);
-        } catch (JsonProcessingException e) {
-            LOGGER.severe(e.getMessage());
-        }
+    private HttpResponse sendPost(String url, ApiRequest req) throws ApiException {
+        String reqString = gson.toJson(req);
         HttpRequest request;
         try {
             URI uri = new URI(url);
@@ -80,7 +67,7 @@ public class KrakenServiceImpl implements KrakenService {
                     .POST(HttpRequest.BodyPublishers.ofString(reqString))
                     .build();
         } catch (NoSuchAlgorithmException | InvalidKeyException | URISyntaxException e) {
-            throw new ApiException("Build request failed");
+            throw new ApiException("Build request failed", e);
         }
 
         HttpResponse<String> httpResponse;
@@ -90,16 +77,10 @@ public class KrakenServiceImpl implements KrakenService {
             throw new ApiException("POST failed");
         }
 
-        LOGGER.info("Status : " + httpResponse.statusCode());
-        LOGGER.info("Body : " + httpResponse.body());
+        LOG.info("Response status : " + httpResponse.statusCode());
+        LOG.info("Response body : " + httpResponse.body());
 
-        ApiResponse response;
-        try {
-            response = mapper.readValue(httpResponse.body(), ApiResponse.class);
-        } catch (JsonProcessingException e) {
-            throw new ApiException("Unable to parse response");
-        }
-        return response;
+        return httpResponse;
     }
 
     private String signMessage(String endpoint, String nonce, String jsonReq)
@@ -123,13 +104,15 @@ public class KrakenServiceImpl implements KrakenService {
 
     @Override
     public KrakenTicker getTicker(List<String> pairs) throws ApiException {
-        return (KrakenTicker) sendGet(PropertyLoader.getInstance().getProperty(KRAKEN_TICKER) + String.join(",", pairs));
+        HttpResponse httpResponse = sendGet(PropertyLoader.getInstance().getProperty(KRAKEN_TICKER) + String.join(",", pairs));
+        return gson.fromJson((String) httpResponse.body(), KrakenTicker.class);
     }
 
     @Override
     public BalanceResponse getBalance(BalanceRequest request) throws ApiException {
         request.setNonce(getNonce());
-        return (BalanceResponse) sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_BALANCE), request);
+        HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_BALANCE), request);
+        return gson.fromJson((String)httpResponse.body(), BalanceResponse.class);
     }
 
     @Override
