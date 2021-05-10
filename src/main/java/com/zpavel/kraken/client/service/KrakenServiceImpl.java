@@ -28,6 +28,8 @@ public class KrakenServiceImpl implements KrakenService {
     public static final String KRAKEN_KEY = "kraken.key";
     public static final String KRAKEN_SECRET = "kraken.secret";
     public static final String KRAKEN_BALANCE = "kraken.balance";
+    public static final String KRAKEN_OPEN_ORDERS = "kraken.openOrders";
+    public static final String KRAKEN_ASSET_PAIRS = "kraken.assetPairs";
     public static final String KRAKEN_TICKER = "kraken.ticker";
     private static int nonce = 0;
     private HttpClient httpClient = HttpClient.newHttpClient();
@@ -41,9 +43,9 @@ public class KrakenServiceImpl implements KrakenService {
         HttpResponse<String> httpResponse;
         try {
             httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            LOG.info("Request status  : " + httpResponse.statusCode());
-            LOG.info("Request headers : " + httpResponse.headers());
-            LOG.info("Request body    : " + httpResponse.body());
+            LOG.info("Response status  : " + httpResponse.statusCode());
+            LOG.info("Response headers : " + httpResponse.headers());
+            LOG.info("Response body    : " + httpResponse.body());
         } catch (IOException | InterruptedException e) {
             throw new ApiException("GET failed", e);
         }
@@ -103,9 +105,15 @@ public class KrakenServiceImpl implements KrakenService {
     }
 
     @Override
-    public KrakenTicker getTicker(List<String> pairs) throws ApiException {
+    public AssetPairsResponse getAssetPairs() throws ApiException {
+        HttpResponse httpResponse = sendGet(PropertyLoader.getInstance().getProperty(KRAKEN_ASSET_PAIRS));
+        return gson.fromJson((String) httpResponse.body(), AssetPairsResponse.class);
+    }
+
+    @Override
+    public KrakenTickerResponse getTicker(List<String> pairs) throws ApiException {
         HttpResponse httpResponse = sendGet(PropertyLoader.getInstance().getProperty(KRAKEN_TICKER) + String.join(",", pairs));
-        return gson.fromJson((String) httpResponse.body(), KrakenTicker.class);
+        return gson.fromJson((String) httpResponse.body(), KrakenTickerResponse.class);
     }
 
     @Override
@@ -116,7 +124,19 @@ public class KrakenServiceImpl implements KrakenService {
     }
 
     @Override
+    public OpenOrdersResponse getOpenOrders(OpenOrdersRequest request) throws ApiException {
+        request.setNonce(getNonce());
+        HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_OPEN_ORDERS), request);
+        return gson.fromJson((String)httpResponse.body(), OpenOrdersResponse.class);
+    }
+
+    @Override
     public AddOrderResponse addOrder(AddOrderRequest request) {
+        return null;
+    }
+
+    @Override
+    public CancelOrderResponse cancelOrder(CancelOrderRequest request) {
         return null;
     }
 }

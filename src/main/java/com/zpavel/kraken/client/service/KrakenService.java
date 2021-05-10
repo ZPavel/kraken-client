@@ -6,9 +6,15 @@ import com.zpavel.kraken.client.domain.*;
 import java.util.List;
 
 public interface KrakenService {
-    KrakenTicker getTicker(List<String> pairs) throws ApiException;
+    AssetPairsResponse getAssetPairs() throws ApiException;
+
+    KrakenTickerResponse getTicker(List<String> pairs) throws ApiException;
 
     BalanceResponse getBalance(BalanceRequest request) throws ApiException;
 
+    OpenOrdersResponse getOpenOrders(OpenOrdersRequest request) throws ApiException;
+
     AddOrderResponse addOrder(AddOrderRequest request);
+
+    CancelOrderResponse cancelOrder(CancelOrderRequest request);
 }
