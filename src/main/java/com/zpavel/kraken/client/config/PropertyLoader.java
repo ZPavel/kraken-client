@@ -34,4 +34,8 @@ public class PropertyLoader {
     public String getProperty(String key) {
         return (String) configuration.getProperty(key);
     }
+
+    public FileBasedConfiguration getConfiguration() {
+        return configuration;
+    }
 }
