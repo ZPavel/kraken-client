@@ -1,7 +1,7 @@
 package com.zpavel.kraken.client.config;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 
 public class PropertyLoader {
@@ -11,10 +11,12 @@ public class PropertyLoader {
 
     private PropertyLoader() {
         properties = new Properties();
-        try (InputStream input = PropertyLoader.class.getResourceAsStream("/application.properties")) {
-            properties.load(input);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        URL resourceURL = PropertyLoader.class.getResource("/application.properties");
+
+        try {
+            properties.load(resourceURL.openStream());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
