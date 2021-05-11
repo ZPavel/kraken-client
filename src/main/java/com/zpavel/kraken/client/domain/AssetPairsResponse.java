@@ -9,7 +9,7 @@ import java.util.Map;
 @Data
 public class AssetPairsResponse extends ApiResponse {
     @Data
-    class AssetPair {
+    public class AssetPair {
         private String altname;
         @SerializedName("aclass_base")
         private String aclassBase;
