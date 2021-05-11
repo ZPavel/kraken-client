@@ -6,21 +6,22 @@ import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.Properties;
+
 public class PropertyLoader {
 
     private static PropertyLoader instance;
-    private FileBasedConfiguration configuration;
+    private Properties properties;
 
     private PropertyLoader() {
-        Parameters params = new Parameters();
-        FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
-                new FileBasedConfigurationBuilder<FileBasedConfiguration>(PropertiesConfiguration.class)
-                        .configure(params.properties()
-                                .setFileName("application.properties"));
-        try {
-            configuration = builder.getConfiguration();
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
+        properties = new Properties();
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
+            properties.load(input);
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -32,10 +33,6 @@ public class PropertyLoader {
     }
 
     public String getProperty(String key) {
-        return (String) configuration.getProperty(key);
-    }
-
-    public FileBasedConfiguration getConfiguration() {
-        return configuration;
+        return properties.getProperty(key);
     }
 }
