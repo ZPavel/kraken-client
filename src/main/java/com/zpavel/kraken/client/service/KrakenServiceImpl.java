@@ -23,14 +23,13 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class KrakenServiceImpl implements KrakenService {
-    private static final Logger LOG = Logger.getLogger(KrakenServiceImpl.class.getName());
-
     public static final String KRAKEN_KEY = "kraken.key";
     public static final String KRAKEN_SECRET = "kraken.secret";
     public static final String KRAKEN_BALANCE = "kraken.balance";
     public static final String KRAKEN_OPEN_ORDERS = "kraken.openOrders";
     public static final String KRAKEN_ASSET_PAIRS = "kraken.assetPairs";
     public static final String KRAKEN_TICKER = "kraken.ticker";
+    private static final Logger LOG = Logger.getLogger(KrakenServiceImpl.class.getName());
     private static int nonce = 0;
     private HttpClient httpClient = HttpClient.newHttpClient();
     private Gson gson = new Gson();
@@ -120,14 +119,14 @@ public class KrakenServiceImpl implements KrakenService {
     public BalanceResponse getBalance(BalanceRequest request) throws ApiException {
         request.setNonce(getNonce());
         HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_BALANCE), request);
-        return gson.fromJson((String)httpResponse.body(), BalanceResponse.class);
+        return gson.fromJson((String) httpResponse.body(), BalanceResponse.class);
     }
 
     @Override
     public OpenOrdersResponse getOpenOrders(OpenOrdersRequest request) throws ApiException {
         request.setNonce(getNonce());
         HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_OPEN_ORDERS), request);
-        return gson.fromJson((String)httpResponse.body(), OpenOrdersResponse.class);
+        return gson.fromJson((String) httpResponse.body(), OpenOrdersResponse.class);
     }
 
     @Override

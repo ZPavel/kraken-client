@@ -7,6 +7,8 @@ import java.util.Map;
 
 @Data
 public class OpenOrdersResponse extends ApiResponse {
+    private Map<String, Map<String, OpenOrder>> result;
+
     @Data
     class OpenOrder {
         private String status;
@@ -14,6 +16,7 @@ public class OpenOrdersResponse extends ApiResponse {
         private OpenOrderDescr descr;
         private BigDecimal vol;
     }
+
     @Data
     class OpenOrderDescr {
         private String pair;
@@ -21,5 +24,4 @@ public class OpenOrdersResponse extends ApiResponse {
         private String ordertype;
         private BigDecimal price;
     }
-    private Map<String, Map<String,OpenOrder>> result;
 }

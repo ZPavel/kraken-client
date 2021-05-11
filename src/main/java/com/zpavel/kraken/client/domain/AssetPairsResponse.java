@@ -8,6 +8,9 @@ import java.util.Map;
 
 @Data
 public class AssetPairsResponse extends ApiResponse {
+    private List<String> error;
+    private Map<String, AssetPair> result;
+
     @Data
     public class AssetPair {
         private String altname;
@@ -18,6 +21,4 @@ public class AssetPairsResponse extends ApiResponse {
         private String aclassQuote;
         private String quote;
     }
-    private List<String> error;
-    private Map<String, AssetPair> result;
 }

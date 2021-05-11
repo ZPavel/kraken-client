@@ -3,6 +3,7 @@ package com.zpavel.kraken.client.service;
 import com.zpavel.kraken.client.ApiException;
 import com.zpavel.kraken.client.domain.*;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class KrakenServiceImplTest {
