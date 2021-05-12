@@ -11,7 +11,7 @@ public class PropertyLoader {
 
     private PropertyLoader() {
         properties = new Properties();
-        URL resourceURL = PropertyLoader.class.getResource("/application.properties");
+        URL resourceURL = PropertyLoader.class.getResource("/kraken-client.properties");
 
         try {
             properties.load(resourceURL.openStream());
