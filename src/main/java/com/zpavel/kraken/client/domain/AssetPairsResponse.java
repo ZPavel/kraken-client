@@ -3,16 +3,14 @@ package com.zpavel.kraken.client.domain;
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
-import java.util.List;
 import java.util.Map;
 
 @Data
 public class AssetPairsResponse extends ApiResponse {
-    private List<String> error;
-    private Map<String, AssetPair> result;
+    private Map<String, AssetPairResult> result;
 
     @Data
-    public class AssetPair {
+    public class AssetPairResult {
         private String altname;
         @SerializedName("aclass_base")
         private String aclassBase;

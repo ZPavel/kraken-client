@@ -25,10 +25,14 @@ import java.util.logging.Logger;
 public class KrakenServiceImpl implements KrakenService {
     public static final String KRAKEN_KEY = "kraken.key";
     public static final String KRAKEN_SECRET = "kraken.secret";
+    public static final String KRAKEN_TICKER = "kraken.ticker";
+    public static final String KRAKEN_ASSET_PAIRS = "kraken.assetPairs";
     public static final String KRAKEN_BALANCE = "kraken.balance";
     public static final String KRAKEN_OPEN_ORDERS = "kraken.openOrders";
-    public static final String KRAKEN_ASSET_PAIRS = "kraken.assetPairs";
-    public static final String KRAKEN_TICKER = "kraken.ticker";
+    public static final String KRAKEN_ADD_ORDER = "kraken.addOrder";
+    public static final String KRAKEN_CANCEL_ORDER = "kraken.cancelOrder";
+    public static final String KRAKEN_CANCEL_ALL = "kraken.cancelAll";
+
     private static final Logger LOG = Logger.getLogger(KrakenServiceImpl.class.getName());
     private static int nonce = 0;
     private HttpClient httpClient = HttpClient.newHttpClient();
@@ -71,6 +75,7 @@ public class KrakenServiceImpl implements KrakenService {
             throw new ApiException("Build request failed", e);
         }
 
+        LOG.info("Request body : " + reqString);
         HttpResponse<String> httpResponse;
         try {
             httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -130,12 +135,23 @@ public class KrakenServiceImpl implements KrakenService {
     }
 
     @Override
-    public AddOrderResponse addOrder(AddOrderRequest request) {
-        return null;
+    public AddOrderResponse addOrder(AddOrderRequest request) throws ApiException {
+        request.setNonce(getNonce());
+        HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_ADD_ORDER), request);
+        return gson.fromJson((String) httpResponse.body(), AddOrderResponse.class);
     }
 
     @Override
-    public CancelOrderResponse cancelOrder(CancelOrderRequest request) {
-        return null;
+    public CancelOrderResponse cancelOrder(CancelOrderRequest request) throws ApiException {
+        request.setNonce(getNonce());
+        HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_CANCEL_ORDER), request);
+        return gson.fromJson((String) httpResponse.body(), CancelOrderResponse.class);
+    }
+
+    @Override
+    public CancelAllResponse cancelAll(CancelAllRequest request) throws ApiException {
+        request.setNonce(getNonce());
+        HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_CANCEL_ALL), request);
+        return gson.fromJson((String) httpResponse.body(), CancelAllResponse.class);
     }
 }

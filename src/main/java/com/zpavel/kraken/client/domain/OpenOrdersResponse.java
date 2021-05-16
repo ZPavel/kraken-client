@@ -7,10 +7,10 @@ import java.util.Map;
 
 @Data
 public class OpenOrdersResponse extends ApiResponse {
-    private Map<String, Map<String, OpenOrder>> result;
+    private Map<String, Map<String, OpenOrderResult>> result;
 
     @Data
-    class OpenOrder {
+    class OpenOrderResult {
         private String status;
         private String opentm;
         private OpenOrderDescr descr;
@@ -23,5 +23,7 @@ public class OpenOrdersResponse extends ApiResponse {
         private String type;
         private String ordertype;
         private BigDecimal price;
+        private BigDecimal price2;
+        private String order;
     }
 }

@@ -14,7 +14,9 @@ public interface KrakenService {
 
     OpenOrdersResponse getOpenOrders(OpenOrdersRequest request) throws ApiException;
 
-    AddOrderResponse addOrder(AddOrderRequest request);
+    AddOrderResponse addOrder(AddOrderRequest request) throws ApiException;
 
-    CancelOrderResponse cancelOrder(CancelOrderRequest request);
+    CancelOrderResponse cancelOrder(CancelOrderRequest request) throws ApiException;
+
+    CancelAllResponse cancelAll(CancelAllRequest request) throws ApiException;
 }
