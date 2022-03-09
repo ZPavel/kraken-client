@@ -66,7 +66,7 @@ public class KrakenServiceImpl implements KrakenService {
                     .headers(
                             "Content-Type", "application/json",
                             "Accept", "application/json",
-                            "API-Key", PropertyLoader.getInstance().getProperty(KRAKEN_KEY),
+                            "API-Key", System.getProperty(KRAKEN_KEY),
                             "API-Sign", signMessage(uri.getPath(), req.getNonce(), reqString)
                     )
                     .POST(HttpRequest.BodyPublishers.ofString(reqString))
@@ -93,8 +93,7 @@ public class KrakenServiceImpl implements KrakenService {
             throws NoSuchAlgorithmException, InvalidKeyException {
         String message = nonce + jsonReq;
         byte[] hash256 = MessageDigest.getInstance("SHA-256").digest(message.getBytes(StandardCharsets.UTF_8));
-        byte[] secretDecoded = Base64.getDecoder().decode(PropertyLoader.getInstance().getProperty(
-                KRAKEN_SECRET));
+        byte[] secretDecoded = Base64.getDecoder().decode(System.getProperty(KRAKEN_SECRET));
         Mac hmacsha512 = Mac.getInstance("HmacSHA512");
         hmacsha512.init(new SecretKeySpec(secretDecoded, "HmacSHA512"));
         hmacsha512.update(endpoint.getBytes(StandardCharsets.UTF_8));
