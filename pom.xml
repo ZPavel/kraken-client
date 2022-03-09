@@ -4,7 +4,7 @@
     <groupId>com.zpavel</groupId>
     <artifactId>kraken-client</artifactId>
     <version>0.0.10-SNAPSHOT</version>
-    <build>
+    <!--<build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -15,7 +15,7 @@
                 </configuration>
             </plugin>
         </plugins>
-    </build>
+    </build>-->
     <name>kraken-client</name>
     <description>kraken-client</description>
 
