@@ -10,6 +10,8 @@ public interface KrakenService {
 
     KrakenTickerResponse getTicker(List<String> pairs) throws ApiException;
 
+    KrakenTickerResponse getTrades(List<String> pairs) throws ApiException;
+
     BalanceResponse getBalance(BalanceRequest request) throws ApiException;
 
     OpenOrdersResponse getOpenOrders(OpenOrdersRequest request) throws ApiException;

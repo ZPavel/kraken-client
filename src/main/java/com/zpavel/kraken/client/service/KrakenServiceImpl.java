@@ -121,6 +121,11 @@ public class KrakenServiceImpl implements KrakenService {
     }
 
     @Override
+    public KrakenTickerResponse getTrades(List<String> pairs) throws ApiException {
+        return null;
+    }
+
+    @Override
     public BalanceResponse getBalance(BalanceRequest request) throws ApiException {
         request.setNonce(getNonce());
         HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_BALANCE), request);
