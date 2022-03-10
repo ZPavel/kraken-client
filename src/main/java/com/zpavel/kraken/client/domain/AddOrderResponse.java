@@ -1,6 +1,6 @@
 package com.zpavel.kraken.client.domain;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,10 +15,10 @@ public class AddOrderResponse extends ApiResponse {
     @Data
     public class AssetPair {
         private String altname;
-        @SerializedName("aclass_base")
+        @JsonProperty("aclass_base")
         private String aclassBase;
         private String base;
-        @SerializedName("aclass_quote")
+        @JsonProperty("aclass_quote")
         private String aclassQuote;
         private String quote;
     }

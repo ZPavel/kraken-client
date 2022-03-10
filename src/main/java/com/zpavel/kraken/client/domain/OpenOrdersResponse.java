@@ -10,7 +10,7 @@ public class OpenOrdersResponse extends ApiResponse {
     private Map<String, Map<String, OpenOrderResult>> result;
 
     @Data
-    class OpenOrderResult {
+    static class OpenOrderResult {
         private String status;
         private String opentm;
         private OpenOrderDescr descr;
@@ -18,7 +18,7 @@ public class OpenOrdersResponse extends ApiResponse {
     }
 
     @Data
-    class OpenOrderDescr {
+    static class OpenOrderDescr {
         private String pair;
         private String type;
         private String ordertype;

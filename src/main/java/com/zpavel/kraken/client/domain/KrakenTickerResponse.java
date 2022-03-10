@@ -12,7 +12,7 @@ public class KrakenTickerResponse extends ApiResponse {
     private Map<String, PairData> result;
 
     @Data
-    public static class PairData {
+    static class PairData {
         /*
         a = ask array(<price>, <whole lot volume>, <lot volume>),
         b = bid array(<price>, <whole lot volume>, <lot volume>),

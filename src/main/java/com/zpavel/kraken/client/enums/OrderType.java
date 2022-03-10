@@ -1,18 +1,18 @@
 package com.zpavel.kraken.client.enums;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum OrderType {
-    @SerializedName("market")
+    @JsonProperty("market")
     MARKET,
-    @SerializedName("limit")
+    @JsonProperty("limit")
     LIMIT,
-    @SerializedName("stop-loss")
+    @JsonProperty("stop-loss")
     STOP_LOSS,
-    @SerializedName("take-profit")
+    @JsonProperty("take-profit")
     TAKE_PROFIT,
-    @SerializedName("stop-loss-limit")
+    @JsonProperty("stop-loss-limit")
     STOP_LOSS_LIMIT,
-    @SerializedName("take-profit-limit")
+    @JsonProperty("take-profit-limit")
     TAKE_PROFIT_LIMIT;
 }

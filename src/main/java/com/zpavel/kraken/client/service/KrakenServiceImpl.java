@@ -1,6 +1,8 @@
 package com.zpavel.kraken.client.service;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zpavel.kraken.client.ApiException;
 import com.zpavel.kraken.client.config.PropertyLoader;
 import com.zpavel.kraken.client.domain.*;
@@ -36,7 +38,7 @@ public class KrakenServiceImpl implements KrakenService {
     private static final Logger LOG = Logger.getLogger(KrakenServiceImpl.class.getName());
     private static int nonce = 0;
     private HttpClient httpClient = HttpClient.newHttpClient();
-    private Gson gson = new Gson();
+    private ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private HttpResponse sendGet(String url) throws ApiException {
         HttpRequest request = HttpRequest.newBuilder()
@@ -57,7 +59,12 @@ public class KrakenServiceImpl implements KrakenService {
     }
 
     private HttpResponse sendPost(String url, ApiRequest req) throws ApiException {
-        String reqString = gson.toJson(req);
+        String reqString = null;
+        try {
+            reqString = objectMapper.writeValueAsString(req);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Build request failed", e);
+        }
         HttpRequest request;
         try {
             URI uri = new URI(url);
@@ -110,13 +117,21 @@ public class KrakenServiceImpl implements KrakenService {
     @Override
     public AssetPairsResponse getAssetPairs() throws ApiException {
         HttpResponse httpResponse = sendGet(PropertyLoader.getInstance().getProperty(KRAKEN_ASSET_PAIRS));
-        return gson.fromJson((String) httpResponse.body(), AssetPairsResponse.class);
+        try {
+            return objectMapper.readValue((String) httpResponse.body(), AssetPairsResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Build request failed", e);
+        }
     }
 
     @Override
     public KrakenTickerResponse getTicker(List<String> pairs) throws ApiException {
         HttpResponse httpResponse = sendGet(PropertyLoader.getInstance().getProperty(KRAKEN_TICKER) + String.join(",", pairs));
-        return gson.fromJson((String) httpResponse.body(), KrakenTickerResponse.class);
+        try {
+            return objectMapper.readValue((String) httpResponse.body(), KrakenTickerResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Build request failed", e);
+        }
     }
 
     @Override
@@ -128,34 +143,54 @@ public class KrakenServiceImpl implements KrakenService {
     public BalanceResponse getBalance(BalanceRequest request) throws ApiException {
         request.setNonce(getNonce());
         HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_BALANCE), request);
-        return gson.fromJson((String) httpResponse.body(), BalanceResponse.class);
+        try {
+            return objectMapper.readValue((String) httpResponse.body(), BalanceResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Build request failed", e);
+        }
     }
 
     @Override
     public OpenOrdersResponse getOpenOrders(OpenOrdersRequest request) throws ApiException {
         request.setNonce(getNonce());
         HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_OPEN_ORDERS), request);
-        return gson.fromJson((String) httpResponse.body(), OpenOrdersResponse.class);
+        try {
+            return objectMapper.readValue((String) httpResponse.body(), OpenOrdersResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Build request failed", e);
+        }
     }
 
     @Override
     public AddOrderResponse addOrder(AddOrderRequest request) throws ApiException {
         request.setNonce(getNonce());
         HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_ADD_ORDER), request);
-        return gson.fromJson((String) httpResponse.body(), AddOrderResponse.class);
+        try {
+            return objectMapper.readValue((String) httpResponse.body(), AddOrderResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Build request failed", e);
+        }
     }
 
     @Override
     public CancelOrderResponse cancelOrder(CancelOrderRequest request) throws ApiException {
         request.setNonce(getNonce());
         HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_CANCEL_ORDER), request);
-        return gson.fromJson((String) httpResponse.body(), CancelOrderResponse.class);
+        try {
+            return objectMapper.readValue((String) httpResponse.body(), CancelOrderResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Build request failed", e);
+        }
     }
 
     @Override
     public CancelAllResponse cancelAll(CancelAllRequest request) throws ApiException {
         request.setNonce(getNonce());
         HttpResponse httpResponse = sendPost(PropertyLoader.getInstance().getProperty(KRAKEN_CANCEL_ALL), request);
-        return gson.fromJson((String) httpResponse.body(), CancelAllResponse.class);
+        try {
+            return objectMapper.readValue((String) httpResponse.body(), CancelAllResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ApiException("Build request failed", e);
+        }
     }
 }
