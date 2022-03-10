@@ -13,7 +13,7 @@ public class AddOrderResponse extends ApiResponse {
     private Map<String, BigDecimal> result;
 
     @Data
-    public class AssetPair {
+    public static class AssetPair {
         private String altname;
         @JsonProperty("aclass_base")
         private String aclassBase;

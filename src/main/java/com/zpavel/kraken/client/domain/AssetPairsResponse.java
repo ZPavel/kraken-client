@@ -10,7 +10,7 @@ public class AssetPairsResponse extends ApiResponse {
     private Map<String, AssetPairResult> result;
 
     @Data
-    static class AssetPairResult {
+    public static class AssetPairResult {
         private String altname;
         @JsonProperty("aclass_base")
         private String aclassBase;

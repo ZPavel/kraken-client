@@ -7,7 +7,7 @@ public class CancelOrderResponse extends ApiResponse {
     private CancelOrderResult result;
 
     @Data
-    static class CancelOrderResult {
+    public static class CancelOrderResult {
         private Integer count;
     }
 }
